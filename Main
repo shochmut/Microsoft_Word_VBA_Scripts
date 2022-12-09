@@ -1,0 +1,60 @@
+Sub Replace_Headers_Footers()
+'
+' Replace_Headers_Footers Macro
+'
+'
+Application.ScreenUpdating = False
+Dim strFolder As String, strFile As String
+Dim wdDocTgt As Document, wdDocSrc As Document
+Dim Sctn As Section, HdFt As HeaderFooter
+strFolder = GetFolder
+If strFolder = "" Then Exit Sub
+Set wdDocSrc = ActiveDocument
+strFile = Dir(strFolder & "\*.doc", vbNormal)               'Set the file path string
+While strFile <> ""                                         'Loop through each file in the folder
+    If strFolder & "\" & strFile <> wdDocSrc.FullName Then  'Condition checks that file path does not equal source word doc
+        Set wdDocTgt = Documents.Open(FileName:=strFolder & "\" & strFile, _
+        AddToRecentFiles:=False, Visible:=False)            'Opens the target word doc for editing
+        With wdDocTgt
+            For Each Sctn In .Sections
+                'For Headers
+                For Each HdFt In Sctn.Headers
+                    With HdFt
+                        If .Exists Then
+                            If Sctn.Index = 1 Then
+                                .Range.FormattedText = _
+                                wdDocSrc.Sections.First.Headers(HdFt.Index).Range.FormattedText
+                                .Range.Characters.Last = vbNullString
+                            ElseIf .LinkToPrevious = False Then
+                                .Range.FormattedText = _
+                                wdDocSrc.Sections.First.Headers(HdFt.Index).Range.FormattedText
+                                .Range.Characters.Last = vbNullString
+                            End If
+                        End If
+                    End With
+                Next
+                'For footers
+                For Each HdFt In Sctn.Footers
+                    With HdFt
+                        If .Exists Then
+                            If Sctn.Index = 1 Then
+                                .Range.FormattedText = _
+                                wdDocSrc.Sections.First.Footers(HdFt.Index).Range.FormattedText
+                                .Range.Characters.Last = vbNullString
+                            ElseIf .LinkToPrevious = False Then
+                                .Range.FormattedText = _
+                                wdDocSrc.Sections.First.Footers(HdFt.Index).Range.FormattedText
+                                .Range.Characters.Last = vbNullString
+                            End If
+                        End If
+                    End With
+                Next
+            Next
+            .Close SaveChanges:=True
+        End With
+    End If
+    strFile = Dir()                         'This line iterates to the next file
+Wend
+Set wdDocSrc = Nothing: Set wdDocTgt = Nothing
+Application.ScreenUpdating = True
+End Sub
