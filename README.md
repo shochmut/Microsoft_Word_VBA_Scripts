@@ -1,3 +1,6 @@
+To automate work tasks:
+
+
 # Word_Replace_Headers_Footers
 This VBA Script strips and replaces all word files in the prompted folder with the headers and footers in the opened word doc source file.
 This script is extremely useful for replacing a batch of Word docs with desired headers and footers without having to manually reformat each Word doc.
