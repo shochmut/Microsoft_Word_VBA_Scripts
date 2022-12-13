@@ -1,0 +1,61 @@
+Sub InsertMacroCode()
+'
+Dim strFilename As String
+Dim strDocName As String
+Dim strPath As String
+Dim fDialog As FileDialog
+Dim oDoc As Document
+Dim intPos As Integer
+'
+Set fDialog = Application.FileDialog(msoFileDialogFolderPicker)
+With fDialog
+    .Title = "Select folder and click OK"
+    .AllowMultiSelect = False
+    .InitialView = msoFileDialogViewList
+    If .Show <> -1 Then
+        MsgBox "Cancelled By User", , "List Folder Contents"
+        Exit Sub
+    End If
+    strPath = fDialog.SelectedItems.Item(1)
+    If Right(strPath, 1) <> "\" Then strPath = strPath + "\"
+End With
+
+If Documents.Count > 0 Then
+    Documents.Close SaveChanges:=wdPromptToSaveChanges
+End If
+
+If Left(strPath, 1) = Chr(34) Then
+    strPath = Mid(strPath, 2, Len(strPath) - 2)
+End If
+
+strFilename = Dir$(strPath & "*.doc")
+
+While Len(strFilename) <> 0
+    Set oDoc = Documents.Open(strPath & strFilename)
+    '
+    '
+    '
+    Set oComponents = oDoc.VBProject.VBComponents
+    
+    For i = oComponents.Count To 1 Step -1
+        If oComponents(i).Type = 100 And oComponents(i).Name = "ThisDocument" Then
+            With oComponents(i).CodeModule
+                .DeleteLines 1, .CountOfLines
+                '.AddFromFile "C:\Users\SkylerHochmuth\OneDrive - Enlitic\Documents\MasterControl_Template_Macro.cls"
+                .AddFromFile "C:\Users\skyle\OneDrive - Enlitic\Documents\MasterControl_Template_Macro.cls"
+            End With
+        End If
+    Next i
+    
+    strDocName = ActiveDocument.FullName
+    intPos = InStrRev(strDocName, ".")
+    strDocName = Left(strDocName, intPos - 1)
+    strDocName = strDocName & ".docm"
+    oDoc.SaveAs2 FileName:=strDocName, _
+        FileFormat:=wdFormatXMLDocumentMacroEnabled
+    oDoc.Close SaveChanges:=wdDoNotSaveChanges
+    strFilename = Dir$()
+Wend
+
+
+End Sub
